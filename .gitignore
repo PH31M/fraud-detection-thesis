@@ -216,3 +216,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+# Data files (không commit dataset lên git)
+data/*.csv
+data/*.zip
+   
+# macOS
+.DS_Store
