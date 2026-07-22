@@ -221,6 +221,8 @@ __marimo__/
 # Data files (không commit dataset lên git)
 data/*.csv
 data/*.zip
+data/*.pkl
+data/*.joblib
    
 # macOS
 .DS_Store
