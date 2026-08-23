@@ -1,0 +1,16 @@
+feature,mean_abs_shap,rank,artifact_version
+errorBalanceOrig,4.795594,1,v2_64_16_20_val_split
+newbalanceOrig,2.7167392,2,v2_64_16_20_val_split
+type_PAYMENT,1.1362875,3,v2_64_16_20_val_split
+type_CASH_OUT,0.88479364,4,v2_64_16_20_val_split
+errorBalanceDest,0.65690684,5,v2_64_16_20_val_split
+amount,0.446661,6,v2_64_16_20_val_split
+oldbalanceOrg,0.37319684,7,v2_64_16_20_val_split
+balance_change_dest,0.29776677,8,v2_64_16_20_val_split
+balance_change_orig,0.26444396,9,v2_64_16_20_val_split
+newbalanceDest,0.22456451,10,v2_64_16_20_val_split
+oldbalanceDest,0.1706653,11,v2_64_16_20_val_split
+step,0.15446192,12,v2_64_16_20_val_split
+type_TRANSFER,0.15318333,13,v2_64_16_20_val_split
+type_DEBIT,0.0007195249,14,v2_64_16_20_val_split
+type_CASH_IN,0.0,15,v2_64_16_20_val_split

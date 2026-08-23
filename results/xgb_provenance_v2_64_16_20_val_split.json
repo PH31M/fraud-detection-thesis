@@ -1,0 +1,26 @@
+{
+  "artifact_version": "v2_64_16_20_val_split",
+  "split_metadata": {
+    "split_version": "v2_64_16_20",
+    "generated_at_utc": "2026-08-20T09:38:14.782010+00:00",
+    "random_state": 42,
+    "train_fraction": 0.6399998742656328,
+    "validation_fraction": 0.16000012573436728,
+    "test_fraction": 0.2,
+    "train_rows": 4072076,
+    "validation_rows": 1018020,
+    "test_rows": 1272524,
+    "n_features": 15
+  },
+  "xgb_params": {
+    "random_state": 42,
+    "eval_metric": "logloss",
+    "tree_method": "hist",
+    "n_estimators": 100,
+    "max_depth": 6,
+    "learning_rate": 0.1,
+    "n_jobs": -1
+  },
+  "smote_fit_split": "train_only",
+  "test_set_used_for_model_training_or_smote": false
+}

@@ -1,0 +1,3 @@
+class_label,before_smote_train_rows,after_smote_train_rows,split_version,artifact_version
+0,4066820,4066820,v2_64_16_20,v2_64_16_20_val_split
+1,5256,4066820,v2_64_16_20,v2_64_16_20_val_split

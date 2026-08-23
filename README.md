@@ -157,8 +157,9 @@ It prepares the modeling dataset by:
 - separating features `X` and target `y`
 - using `isFraud` as the target label
 - dropping `isFlaggedFraud`
-- performing stratified 80:20 train/test split
-- scaling features with `StandardScaler`
+- performing a stratified 64:16:20 train/validation/test split
+- keeping the test set locked for final reporting
+- scaling features with `StandardScaler` fitted on the training set only
 
 It writes:
 
@@ -222,6 +223,20 @@ results/train_smote_summary.csv
 - cost-sensitive evaluation
 - threshold sweep analysis
 
+It performs cost-sensitive evaluation with the following split policy:
+
+- `cost_sensitive_comparison.csv`: baseline comparison on the test set with fixed threshold `0.5`
+- `cost_sensitive_threshold_sweep.csv`: threshold sweep on the validation set only
+- `cost_sensitive_best_thresholds.csv`: thresholds selected from validation, including their selection split
+- `cost_sensitive_test_final.csv`: final test metrics using thresholds selected from validation
+- `cost_sensitive_sensitivity.csv`: descriptive sensitivity analysis at fixed threshold `0.5`
+
+The threshold-selection workflow is:
+
+```text
+train models -> select threshold on validation -> lock threshold -> report once on test
+```
+
 It writes:
 
 ```text
@@ -233,6 +248,7 @@ results/cost_sensitive_sensitivity.csv
 results/cost_sensitive_sensitivity.png
 results/cost_sensitive_threshold_sweep.csv
 results/cost_sensitive_best_thresholds.csv
+results/cost_sensitive_test_final.csv
 ```
 
 ## Important Generated Files

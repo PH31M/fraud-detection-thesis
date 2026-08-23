@@ -1,0 +1,8 @@
+{
+  "split_version": "v2_64_16_20",
+  "train_rows": 4072076,
+  "validation_rows": 1018020,
+  "test_rows": 1272524,
+  "model_selection_split": "not_used_for_baseline_hyperparameter_search",
+  "final_evaluation_split": "test"
+}

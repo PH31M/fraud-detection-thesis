@@ -1,0 +1,12 @@
+{
+  "artifact_version": "v2_64_16_20_val_split",
+  "split_version": "v2_64_16_20",
+  "cost_matrix": {
+    "false_positive": 1,
+    "false_negative": 50
+  },
+  "validation_sweep_artifact": "cost_sensitive_validation_sweep_v2_64_16_20_val_split.csv",
+  "selected_thresholds_artifact": "cost_sensitive_selected_thresholds_v2_64_16_20_val_split.csv",
+  "final_test_artifact": "cost_sensitive_test_final_v2_64_16_20_val_split.csv",
+  "test_used_for_threshold_selection": false
+}
