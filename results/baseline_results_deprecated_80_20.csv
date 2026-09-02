@@ -1,5 +1,0 @@
-model,accuracy,precision,recall,f1,roc_auc,pr_auc,train_time_sec,predict_time_sec,evaluation_scope
-Logistic Regression,0.9493,0.0239,0.961,0.0467,0.9908,0.5806,17.322,0.169,full_test
-KNN,0.9991,1.0,0.3231,0.4884,0.8073,0.4906,0.234,9.479,stratified_sample_train_50000_test_50000
-Decision Tree,1.0,0.9964,0.9976,0.997,0.9988,0.9939,150.973,0.366,full_test
-Random Forest,1.0,1.0,0.9976,0.9988,0.9997,0.9982,352.238,5.027,full_test
