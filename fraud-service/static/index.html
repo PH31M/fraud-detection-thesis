@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fraud Detection Service — Test Page</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="statusbar" id="statusbar">
+    <div class="statusbar-item">
+      <span class="dot" id="health-dot"></span>
+      <span id="health-text">Checking service…</span>
+    </div>
+    <div class="statusbar-item" id="model-info-text">Loading model info…</div>
+  </header>
+
+  <main class="layout">
+    <section class="panel" id="form-panel">
+      <h2>Transaction</h2>
+
+      <div class="presets">
+        <button type="button" class="preset-btn preset-fraud" id="preset-fraud">🔴 Fraud rõ ràng</button>
+        <button type="button" class="preset-btn preset-normal" id="preset-normal">🟢 Normal rõ ràng</button>
+        <button type="button" class="preset-btn preset-edge" id="preset-edge">🟡 Case biên</button>
+        <button type="button" class="preset-btn preset-error" id="preset-error">⚠️ Gửi request lỗi (test 422)</button>
+      </div>
+
+      <form id="predict-form">
+        <label>
+          step
+          <input type="number" id="field-step" name="step" min="0" step="1" value="1" required />
+        </label>
+
+        <label>
+          type
+          <select id="field-type" name="type" required>
+            <option value="TRANSFER">TRANSFER</option>
+            <option value="CASH_OUT">CASH_OUT</option>
+            <option value="PAYMENT">PAYMENT</option>
+            <option value="CASH_IN">CASH_IN</option>
+            <option value="DEBIT">DEBIT</option>
+          </select>
+        </label>
+
+        <label>
+          amount
+          <input type="number" id="field-amount" name="amount" step="any" value="181.0" required />
+        </label>
+
+        <label>
+          oldbalanceOrg
+          <input type="number" id="field-oldbalanceOrg" name="oldbalanceOrg" step="any" value="181.0" required />
+        </label>
+
+        <label>
+          newbalanceOrig
+          <input type="number" id="field-newbalanceOrig" name="newbalanceOrig" step="any" value="0.0" required />
+        </label>
+
+        <label>
+          oldbalanceDest
+          <input type="number" id="field-oldbalanceDest" name="oldbalanceDest" step="any" value="0.0" required />
+        </label>
+
+        <label>
+          newbalanceDest
+          <input type="number" id="field-newbalanceDest" name="newbalanceDest" step="any" value="0.0" required />
+        </label>
+
+        <button type="submit" id="submit-btn">Submit → /predict</button>
+      </form>
+    </section>
+
+    <section class="panel" id="result-panel">
+      <h2>Result</h2>
+      <div id="result-empty" class="muted">Chưa có kết quả — điền form hoặc bấm 1 preset rồi Submit.</div>
+
+      <div id="result-content" class="hidden">
+        <div class="flag-row">
+          <span id="flag-badge" class="badge"></span>
+          <span id="threshold-note" class="muted"></span>
+        </div>
+
+        <div class="prob-bar-track">
+          <div id="prob-bar-fill" class="prob-bar-fill"></div>
+        </div>
+        <div id="prob-bar-label" class="prob-bar-label"></div>
+
+        <h3>Top features (SHAP)</h3>
+        <div id="shap-chart" class="shap-chart"></div>
+      </div>
+
+      <div id="result-error" class="error-box hidden"></div>
+    </section>
+  </main>
+
+  <section class="panel" id="history-panel">
+    <h2>Lịch sử test trong phiên</h2>
+    <table id="history-table">
+      <thead>
+        <tr>
+          <th>Thời gian</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Fraud probability</th>
+          <th>Flag</th>
+        </tr>
+      </thead>
+      <tbody id="history-body">
+        <tr id="history-empty-row">
+          <td colspan="5" class="muted">Chưa có request nào thành công.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
