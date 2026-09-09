@@ -10,6 +10,8 @@
   --red: #b91c1c;
   --red-bg: #fee2e2;
   --amber-bg: #fef9c3;
+  --amber-border: #facc15;
+  --amber-text: #92610a;
 }
 
 * {
@@ -17,11 +19,19 @@
 }
 
 body {
-  margin: 0;
+  margin: 0 auto;
+  max-width: 1000px;
   font-family: Arial, Helvetica, sans-serif;
   background: var(--bg);
   color: var(--text);
-  padding: 16px;
+  padding: 16px 24px;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 4px 0 16px;
+  text-align: center;
 }
 
 h2 {
@@ -46,55 +56,12 @@ h3 {
   display: none !important;
 }
 
-/* Status bar */
-
-.statusbar {
-  display: flex;
-  gap: 24px;
-  align-items: center;
-  background: var(--panel-bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 16px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-
-.statusbar-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-}
-
-.dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--muted);
-  display: inline-block;
-}
-
-.dot.ok {
-  background: var(--green);
-}
-
-.dot.down {
-  background: var(--red);
-}
-
 /* Layout */
 
 .layout {
-  display: grid;
-  grid-template-columns: minmax(280px, 380px) 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
-}
-
-@media (max-width: 720px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
 }
 
 .panel {
@@ -110,8 +77,15 @@ h3 {
 .presets {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 14px;
+}
+
+.preset-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 220px;
 }
 
 .preset-btn {
@@ -130,6 +104,12 @@ h3 {
 #predict-form {
   display: flex;
   flex-direction: column;
+  gap: 14px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
   gap: 10px;
 }
 
@@ -141,6 +121,17 @@ h3 {
   color: var(--muted);
 }
 
+.field-label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.field-hint {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
 #predict-form input,
 #predict-form select {
   font-size: 14px;
@@ -150,16 +141,177 @@ h3 {
   color: var(--text);
 }
 
+/* Balance groups (Người gửi / Người nhận) */
+
+.balance-groups {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .balance-groups {
+    grid-template-columns: 1fr;
+  }
+}
+
+.balance-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.balance-card legend {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  padding: 0 4px;
+}
+
+.balance-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.balance-field.sync-auto {
+  background: var(--green-bg);
+  padding: 6px;
+  margin: -6px;
+}
+
+.balance-field.sync-manual {
+  background: var(--amber-bg);
+  padding: 6px;
+  margin: -6px;
+}
+
+.sync-badge {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.balance-field.sync-auto .sync-badge {
+  color: var(--green);
+}
+
+.balance-field.sync-manual .sync-badge {
+  color: var(--amber-text);
+}
+
+.reset-balance-btn {
+  margin-left: 6px;
+  border: 1px solid var(--amber-border);
+  background: #fffbeb;
+  color: var(--amber-text);
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.reset-balance-btn:hover {
+  background: var(--amber-bg);
+}
+
+.action-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+}
+
+@media (max-width: 480px) {
+  .action-row {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 12px;
+  }
+}
+
+#predict-form .switch-toggle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  justify-self: start;
+}
+
+@media (max-width: 480px) {
+  .switch-toggle {
+    justify-self: center;
+  }
+}
+
+.toggle-btn-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-track {
+  position: relative;
+  flex-shrink: 0;
+  width: 36px;
+  height: 20px;
+  background: var(--border);
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+
+.switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.toggle-btn-input:checked + .switch-track {
+  background: var(--blue);
+}
+
+.toggle-btn-input:checked + .switch-track .switch-thumb {
+  transform: translateX(16px);
+}
+
+.switch-label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.switch-label small {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
 #submit-btn {
-  margin-top: 8px;
   background: var(--blue);
   color: white;
   border: none;
   border-radius: 8px;
-  padding: 10px;
+  padding: 10px 16px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  justify-self: center;
 }
 
 #submit-btn:hover {
@@ -224,6 +376,12 @@ h3 {
   font-weight: 600;
 }
 
+.shap-legend {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+
 .shap-chart {
   display: flex;
   flex-direction: column;
@@ -232,16 +390,15 @@ h3 {
 
 .shap-row {
   display: grid;
-  grid-template-columns: 140px 1fr 70px;
+  grid-template-columns: 180px 1fr 70px;
   align-items: center;
   gap: 8px;
   font-size: 13px;
 }
 
 .shap-feature-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 .shap-bar-track {
@@ -314,4 +471,43 @@ h3 {
 
 #history-table tbody tr.flag-false td {
   background: transparent;
+}
+
+/* Guide panel */
+
+#guide-panel summary {
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#guide-panel[open] summary {
+  margin-bottom: 8px;
+}
+
+.guide-block {
+  margin-bottom: 18px;
+}
+
+.guide-block:last-child {
+  margin-bottom: 0;
+}
+
+.guide-block h3 {
+  margin-top: 0;
+}
+
+.guide-block p,
+.guide-block ol {
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.guide-block ol {
+  padding-left: 20px;
+}
+
+.guide-block li {
+  margin-bottom: 4px;
 }

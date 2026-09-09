@@ -47,12 +47,157 @@ const FORM_FIELDS = [
   "newbalanceDest",
 ];
 
+const AMOUNT_LABELS = {
+  TRANSFER: "Số tiền muốn chuyển",
+  CASH_OUT: "Số tiền muốn rút",
+  PAYMENT: "Số tiền thanh toán",
+  CASH_IN: "Số tiền muốn nạp",
+  DEBIT: "Số tiền bị ghi nợ",
+};
+
+const FEATURE_LABELS = {
+  step: "Thời điểm",
+  amount: "Số tiền",
+  oldbalanceOrg: "Số dư gửi (trước)",
+  newbalanceOrig: "Số dư gửi (sau)",
+  oldbalanceDest: "Số dư nhận (trước)",
+  newbalanceDest: "Số dư nhận (sau)",
+  errorBalanceOrig: "Lệch số dư gửi",
+  errorBalanceDest: "Lệch số dư nhận",
+  balance_change_orig: "%Δ số dư gửi",
+  balance_change_dest: "%Δ số dư nhận",
+  type_TRANSFER: "Là Chuyển tiền?",
+  type_CASH_OUT: "Là Rút tiền?",
+  type_PAYMENT: "Là Thanh toán?",
+  type_CASH_IN: "Là Nạp tiền?",
+  type_DEBIT: "Là Ghi nợ?",
+};
+
+// Chỉ 3 loại này đã được đối chiếu khớp công thức errorBalanceOrig/errorBalanceDest
+// trong app/features.py (xem "Claude outputs/thiet-ke-lai-giao-dien-test.md", mục 7.1).
+const AUTO_SYNC_SUPPORTED_TYPES = ["TRANSFER", "CASH_OUT", "PAYMENT"];
+
 const historyEntries = [];
+
+const balanceSync = {
+  origState: "auto", // "auto" | "manual"
+  destState: "auto",
+  suppressEvents: false,
+};
 
 function fillForm(preset) {
   for (const key of FORM_FIELDS) {
     document.getElementById(`field-${key}`).value = preset[key];
   }
+  updateAmountLabel();
+  evaluateBalanceSyncState();
+  refreshBalanceSync();
+}
+
+function translateFeatureName(name) {
+  return FEATURE_LABELS[name] || name;
+}
+
+function updateAmountLabel() {
+  const type = document.getElementById("field-type").value;
+  document.getElementById("amount-label").textContent =
+    AMOUNT_LABELS[type] || "Số tiền giao dịch";
+}
+
+function round2(n) {
+  return Math.round(n * 100) / 100;
+}
+
+function computeAutoOrig(oldOrig, amount) {
+  return round2(oldOrig - amount);
+}
+
+function computeAutoDest(oldDest, amount, type) {
+  if (type === "PAYMENT") return round2(oldDest);
+  return round2(oldDest + amount);
+}
+
+function readBalanceInputs() {
+  return {
+    type: document.getElementById("field-type").value,
+    amount: Number(document.getElementById("field-amount").value) || 0,
+    oldOrig: Number(document.getElementById("field-oldbalanceOrg").value) || 0,
+    oldDest: Number(document.getElementById("field-oldbalanceDest").value) || 0,
+  };
+}
+
+function evaluateBalanceSyncState() {
+  const { type, amount, oldOrig, oldDest } = readBalanceInputs();
+  const supported = AUTO_SYNC_SUPPORTED_TYPES.includes(type);
+  if (!supported) {
+    balanceSync.origState = "manual";
+    balanceSync.destState = "manual";
+    return;
+  }
+  const curOrig = Number(document.getElementById("field-newbalanceOrig").value) || 0;
+  const curDest = Number(document.getElementById("field-newbalanceDest").value) || 0;
+  const expectedOrig = computeAutoOrig(oldOrig, amount);
+  const expectedDest = computeAutoDest(oldDest, amount, type);
+  balanceSync.origState = Math.abs(curOrig - expectedOrig) < 0.005 ? "auto" : "manual";
+  balanceSync.destState = Math.abs(curDest - expectedDest) < 0.005 ? "auto" : "manual";
+}
+
+function setFieldValueProgrammatically(id, value) {
+  balanceSync.suppressEvents = true;
+  document.getElementById(id).value = value;
+  balanceSync.suppressEvents = false;
+}
+
+function updateBalanceField(kind) {
+  const isOrig = kind === "orig";
+  const inputId = isOrig ? "field-newbalanceOrig" : "field-newbalanceDest";
+  const wrapId = isOrig ? "orig-balance-field" : "dest-balance-field";
+  const badge = document.getElementById(isOrig ? "orig-sync-badge" : "dest-sync-badge");
+  const wrap = document.getElementById(wrapId);
+  const state = isOrig ? balanceSync.origState : balanceSync.destState;
+
+  const { type, amount, oldOrig, oldDest } = readBalanceInputs();
+  const supported = AUTO_SYNC_SUPPORTED_TYPES.includes(type);
+  const autoSyncOn = document.getElementById("auto-sync-toggle").checked;
+
+  wrap.classList.remove("sync-auto", "sync-manual");
+
+  if (!autoSyncOn) {
+    badge.innerHTML = "";
+    return;
+  }
+
+  if (!supported) {
+    badge.innerHTML =
+      "⚠️ Loại giao dịch này chưa kiểm chứng công thức số dư — vui lòng tự nhập tay.";
+    return;
+  }
+
+  const expected = isOrig
+    ? computeAutoOrig(oldOrig, amount)
+    : computeAutoDest(oldDest, amount, type);
+
+  if (state === "auto") {
+    setFieldValueProgrammatically(inputId, expected);
+    wrap.classList.add("sync-auto");
+    const note =
+      !isOrig && type === "PAYMENT"
+        ? "✓ Tự động tính — giữ nguyên, bình thường với Thanh toán"
+        : "✓ Tự động tính — khớp công thức hợp lệ";
+    badge.innerHTML = note;
+  } else {
+    const actual = Number(document.getElementById(inputId).value) || 0;
+    const diff = round2(actual - expected);
+    wrap.classList.add("sync-manual");
+    badge.innerHTML =
+      `✎ Đã sửa tay — lệch ${diff} so với giá trị hợp lệ ` +
+      `<button type="button" class="reset-balance-btn" data-target="${kind}">↺ Đặt lại giá trị hợp lệ</button>`;
+  }
+}
+
+function refreshBalanceSync() {
+  updateBalanceField("orig");
+  updateBalanceField("dest");
 }
 
 async function fetchWithTimeout(url, options, timeoutMs = 4000) {
@@ -62,38 +207,6 @@ async function fetchWithTimeout(url, options, timeoutMs = 4000) {
     return await fetch(url, { ...options, signal: controller.signal });
   } finally {
     clearTimeout(timer);
-  }
-}
-
-async function loadStatusBar() {
-  const dot = document.getElementById("health-dot");
-  const text = document.getElementById("health-text");
-  try {
-    const response = await fetchWithTimeout("/health", {}, 4000);
-    if (response.ok) {
-      const body = await response.json();
-      dot.className = "dot ok";
-      text.textContent = `Service: ${body.status.toUpperCase()}`;
-    } else {
-      dot.className = "dot down";
-      text.textContent = `Service: DOWN (HTTP ${response.status})`;
-    }
-  } catch (err) {
-    dot.className = "dot down";
-    text.textContent = "Service: DOWN (unreachable)";
-  }
-
-  const infoText = document.getElementById("model-info-text");
-  try {
-    const response = await fetchWithTimeout("/model-info", {}, 4000);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const info = await response.json();
-    const m = info.metrics;
-    infoText.textContent =
-      `${info.model_version} · threshold=${info.threshold} · ` +
-      `precision=${m.precision} recall=${m.recall} f1=${m.f1}`;
-  } catch (err) {
-    infoText.textContent = "Model info unavailable";
   }
 }
 
@@ -114,15 +227,14 @@ function renderResult(result) {
   badge.className = `badge ${isFraud ? "fraud" : "normal"}`;
 
   document.getElementById("threshold-note").textContent =
-    `threshold_used = ${result.threshold_used}`;
+    `Hệ thống gắn cờ gian lận khi độ tin cậy ≥ ${formatProbability(result.threshold_used)}.`;
 
   const fill = document.getElementById("prob-bar-fill");
   fill.style.width = formatProbability(result.fraud_probability);
   fill.className = `prob-bar-fill ${isFraud ? "fraud" : ""}`;
 
   document.getElementById("prob-bar-label").textContent =
-    `fraud_probability = ${formatProbability(result.fraud_probability)} ` +
-    `(${result.fraud_probability})`;
+    `Mô hình đánh giá ${formatProbability(result.fraud_probability)} khả năng đây là giao dịch gian lận.`;
 
   const chart = document.getElementById("shap-chart");
   chart.innerHTML = "";
@@ -136,7 +248,7 @@ function renderResult(result) {
 
     const name = document.createElement("div");
     name.className = "shap-feature-name";
-    name.textContent = feature.feature;
+    name.textContent = translateFeatureName(feature.feature);
     name.title = feature.feature;
 
     const track = document.createElement("div");
@@ -253,8 +365,6 @@ async function submitPrediction(event) {
 }
 
 function init() {
-  loadStatusBar();
-
   document.getElementById("preset-fraud").addEventListener("click", () =>
     fillForm(PRESETS.fraud)
   );
@@ -271,6 +381,41 @@ function init() {
   document
     .getElementById("predict-form")
     .addEventListener("submit", submitPrediction);
+
+  document.getElementById("field-type").addEventListener("change", () => {
+    updateAmountLabel();
+    refreshBalanceSync();
+  });
+
+  for (const id of ["field-amount", "field-oldbalanceOrg", "field-oldbalanceDest"]) {
+    document.getElementById(id).addEventListener("input", refreshBalanceSync);
+  }
+
+  document.getElementById("field-newbalanceOrig").addEventListener("input", () => {
+    if (balanceSync.suppressEvents) return;
+    balanceSync.origState = "manual";
+    updateBalanceField("orig");
+  });
+  document.getElementById("field-newbalanceDest").addEventListener("input", () => {
+    if (balanceSync.suppressEvents) return;
+    balanceSync.destState = "manual";
+    updateBalanceField("dest");
+  });
+
+  document.getElementById("auto-sync-toggle").addEventListener("change", refreshBalanceSync);
+
+  document.querySelector(".balance-groups").addEventListener("click", (event) => {
+    const btn = event.target.closest(".reset-balance-btn");
+    if (!btn) return;
+    const kind = btn.dataset.target;
+    if (kind === "orig") balanceSync.origState = "auto";
+    if (kind === "dest") balanceSync.destState = "auto";
+    updateBalanceField(kind);
+  });
+
+  updateAmountLabel();
+  evaluateBalanceSyncState();
+  refreshBalanceSync();
 }
 
 window.addEventListener("DOMContentLoaded", init);

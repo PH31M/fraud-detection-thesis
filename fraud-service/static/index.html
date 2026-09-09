@@ -7,87 +7,130 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="statusbar" id="statusbar">
-    <div class="statusbar-item">
-      <span class="dot" id="health-dot"></span>
-      <span id="health-text">Checking service…</span>
-    </div>
-    <div class="statusbar-item" id="model-info-text">Loading model info…</div>
-  </header>
+  <h1 class="page-title">Mô hình phát hiện gian lận giao dịch</h1>
 
   <main class="layout">
     <section class="panel" id="form-panel">
-      <h2>Transaction</h2>
+      <h2>Thông tin giao dịch cần kiểm tra</h2>
 
       <div class="presets">
-        <button type="button" class="preset-btn preset-fraud" id="preset-fraud">🔴 Fraud rõ ràng</button>
-        <button type="button" class="preset-btn preset-normal" id="preset-normal">🟢 Normal rõ ràng</button>
-        <button type="button" class="preset-btn preset-edge" id="preset-edge">🟡 Case biên</button>
-        <button type="button" class="preset-btn preset-error" id="preset-error">⚠️ Gửi request lỗi (test 422)</button>
+        <div class="preset-item">
+          <button type="button" class="preset-btn preset-fraud" id="preset-fraud"
+                  title="Tiền rời ví gửi nhưng ví nhận không tăng.">Fraud</button>
+        </div>
+        <div class="preset-item">
+          <button type="button" class="preset-btn preset-normal" id="preset-normal"
+                  title="Số dư gửi giảm đúng bằng số tiền.">Normal</button>
+        </div>
+        <div class="preset-item">
+          <button type="button" class="preset-btn preset-edge" id="preset-edge"
+                  title="Số dư khớp công thức, nhưng rút hết sạch ví.">Rút hết sạch ví</button>
+        </div>
+        <div class="preset-item">
+          <button type="button" class="preset-btn preset-error" id="preset-error"
+                  title="Số tiền âm để test lỗi 422.">Lỗi</button>
+        </div>
       </div>
 
       <form id="predict-form">
-        <label>
-          step
-          <input type="number" id="field-step" name="step" min="0" step="1" value="1" required />
-        </label>
+        <div class="field-group">
+          <h3>Thông tin giao dịch</h3>
 
-        <label>
-          type
-          <select id="field-type" name="type" required>
-            <option value="TRANSFER">TRANSFER</option>
-            <option value="CASH_OUT">CASH_OUT</option>
-            <option value="PAYMENT">PAYMENT</option>
-            <option value="CASH_IN">CASH_IN</option>
-            <option value="DEBIT">DEBIT</option>
-          </select>
-        </label>
+          <label for="field-step">
+            <span class="field-label">Thời điểm giao dịch (giờ mô phỏng)</span>
+            <input type="number" id="field-step" name="step" min="0" step="1" value="1" required />
+            <span class="field-hint">1 step ≈ 1 giờ</span>
+          </label>
 
-        <label>
-          amount
-          <input type="number" id="field-amount" name="amount" step="any" value="181.0" required />
-        </label>
+          <label for="field-type">
+            <span class="field-label">Loại giao dịch</span>
+            <select id="field-type" name="type" required>
+              <option value="TRANSFER">Chuyển tiền (giữa 2 ví)</option>
+              <option value="CASH_OUT">Rút tiền mặt</option>
+              <option value="PAYMENT">Thanh toán / mua hàng</option>
+              <option value="CASH_IN">Nạp tiền vào ví</option>
+              <option value="DEBIT">Ghi nợ / trừ tiền trực tiếp</option>
+            </select>
+          </label>
 
-        <label>
-          oldbalanceOrg
-          <input type="number" id="field-oldbalanceOrg" name="oldbalanceOrg" step="any" value="181.0" required />
-        </label>
+          <label for="field-amount">
+            <span class="field-label" id="amount-label">Số tiền muốn chuyển</span>
+            <input type="number" id="field-amount" name="amount" step="any" value="181.0" required />
+            <span class="field-hint">Đơn vị mô phỏng, không phải tiền thật</span>
+          </label>
+        </div>
 
-        <label>
-          newbalanceOrig
-          <input type="number" id="field-newbalanceOrig" name="newbalanceOrig" step="any" value="0.0" required />
-        </label>
+        <div class="balance-groups">
+          <fieldset class="balance-card" id="origin-card">
+            <legend>👤 Người gửi</legend>
 
-        <label>
-          oldbalanceDest
-          <input type="number" id="field-oldbalanceDest" name="oldbalanceDest" step="any" value="0.0" required />
-        </label>
+            <label for="field-oldbalanceOrg">
+              <span class="field-label">Số dư TRƯỚC giao dịch</span>
+              <input type="number" id="field-oldbalanceOrg" name="oldbalanceOrg" step="any" value="181.0" required />
+            </label>
 
-        <label>
-          newbalanceDest
-          <input type="number" id="field-newbalanceDest" name="newbalanceDest" step="any" value="0.0" required />
-        </label>
+            <div class="balance-field" id="orig-balance-field">
+              <label for="field-newbalanceOrig">
+                <span class="field-label">Số dư SAU giao dịch</span>
+                <input type="number" id="field-newbalanceOrig" name="newbalanceOrig" step="any" value="0.0" required />
+                <span class="field-hint">Bình thường = Trước − Số tiền</span>
+              </label>
+              <div class="sync-badge" id="orig-sync-badge"></div>
+            </div>
+          </fieldset>
 
-        <button type="submit" id="submit-btn">Submit → /predict</button>
+          <fieldset class="balance-card" id="dest-card">
+            <legend>🏦 Người nhận</legend>
+
+            <label for="field-oldbalanceDest">
+              <span class="field-label">Số dư TRƯỚC giao dịch</span>
+              <input type="number" id="field-oldbalanceDest" name="oldbalanceDest" step="any" value="0.0" required />
+              <span class="field-hint">Với Thanh toán: thường = 0</span>
+            </label>
+
+            <div class="balance-field" id="dest-balance-field">
+              <label for="field-newbalanceDest">
+                <span class="field-label">Số dư SAU giao dịch</span>
+                <input type="number" id="field-newbalanceDest" name="newbalanceDest" step="any" value="0.0" required />
+              </label>
+              <div class="sync-badge" id="dest-sync-badge"></div>
+            </div>
+          </fieldset>
+        </div>
+
+        <div class="action-row">
+          <label class="switch-toggle" for="auto-sync-toggle"
+                 title="Tự động đồng bộ số dư hợp lệ (Chuyển tiền/Rút tiền/Thanh toán)">
+            <span class="switch-label">
+              <strong>Auto-sync</strong>
+              <small>Tự động đồng bộ số dư</small>
+            </span>
+            <input type="checkbox" id="auto-sync-toggle" class="toggle-btn-input" checked />
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+          </label>
+
+          <button type="submit" id="submit-btn">🔍 Kiểm tra giao dịch</button>
+        </div>
       </form>
     </section>
 
     <section class="panel" id="result-panel">
-      <h2>Result</h2>
-      <div id="result-empty" class="muted">Chưa có kết quả — điền form hoặc bấm 1 preset rồi Submit.</div>
+      <h2>Kết quả kiểm tra</h2>
+      <div id="result-empty" class="muted">Chưa có kết quả — điền form hoặc bấm 1 mẫu dựng sẵn rồi bấm "Kiểm tra giao dịch".</div>
 
       <div id="result-content" class="hidden">
         <div class="flag-row">
           <span id="flag-badge" class="badge"></span>
-          <span id="threshold-note" class="muted"></span>
         </div>
+        <div id="threshold-note" class="muted"></div>
 
         <div class="prob-bar-track">
           <div id="prob-bar-fill" class="prob-bar-fill"></div>
         </div>
         <div id="prob-bar-label" class="prob-bar-label"></div>
 
-        <h3>Top features (SHAP)</h3>
+        <h3>Các yếu tố ảnh hưởng nhiều nhất đến kết quả</h3>
+        <p class="shap-legend">🔴 Đỏ = yếu tố khiến hệ thống nghi ngờ nhiều hơn · 🟢 Xanh = yếu tố khiến hệ thống tin tưởng hơn</p>
         <div id="shap-chart" class="shap-chart"></div>
       </div>
 
@@ -114,6 +157,56 @@
       </tbody>
     </table>
   </section>
+
+  <details class="panel" id="guide-panel">
+    <summary>📖 Hướng dẫn sử dụng</summary>
+
+    <div class="guide-block">
+      <h3>Trang này dùng để làm gì</h3>
+      <p>
+        Đây là trang demo để thử mô hình phát hiện gian lận (XGBoost + Isolation Forest)
+        trên dữ liệu mô phỏng PaySim. Bạn nhập thông tin một giao dịch giả định, hệ thống
+        sẽ chấm điểm khả năng gian lận. Số tiền/số dư ở đây là đơn vị mô phỏng, không phải
+        tiền thật.
+      </p>
+    </div>
+
+    <div class="guide-block">
+      <h3>Cách test nhanh (3 bước)</h3>
+      <ol>
+        <li>Bấm 1 trong 4 nút mẫu dựng sẵn phía trên form (Fraud / Normal / Rút hết sạch ví / Lỗi) để tự động điền số liệu, hoặc tự nhập tay theo hướng dẫn bên dưới.</li>
+        <li>Bấm <strong>"Kiểm tra giao dịch"</strong>.</li>
+        <li>Xem kết quả bên khung phải: khung màu đỏ = hệ thống nghi ngờ gian lận, khung xanh = hệ thống cho là bình thường; thanh % bên dưới là mức độ tự tin của mô hình.</li>
+      </ol>
+    </div>
+
+    <div class="guide-block">
+      <h3>Giải thích từng ô nhập liệu</h3>
+      <p>
+        <strong>Số tiền muốn chuyển/rút/thanh toán</strong>: số tiền của giao dịch bạn đang
+        mô phỏng — nhãn ô này tự đổi theo loại giao dịch bạn chọn.
+        <strong>Số dư ví người gửi/người nhận — trước/sau</strong>: số tiền trong ví
+        ngay trước và ngay sau giao dịch. Với giao dịch hợp lệ, số dư sau thường bằng số
+        dư trước cộng/trừ số tiền giao dịch — nếu bạn cố tình nhập lệch (vd. số dư sau vẫn
+        giữ nguyên dù đã chuyển tiền), đó chính là kiểu bất thường mà mô hình được huấn
+        luyện để phát hiện. Với giao dịch <strong>Thanh toán</strong>, số dư người nhận
+        lệch so với công thức là <strong>bình thường</strong> — không phải dấu hiệu gian
+        lận — do đặc điểm dữ liệu (merchant không lưu số dư).
+      </p>
+    </div>
+
+    <div class="guide-block">
+      <h3>Giải thích cách đọc kết quả</h3>
+      <p>
+        Badge <strong>FRAUD</strong>/<strong>NOT FRAUD</strong> cho biết hệ thống có gắn
+        cờ gian lận hay không, dựa trên một ngưỡng tin cậy cố định (hiển thị ngay bên
+        dưới badge). Thanh phần trăm thể hiện mức độ tự tin của mô hình rằng đây là giao
+        dịch gian lận. Bảng bên dưới liệt kê các yếu tố ảnh hưởng nhiều nhất đến quyết
+        định đó: màu đỏ là yếu tố khiến hệ thống nghi ngờ nhiều hơn, màu xanh là yếu tố
+        khiến hệ thống tin tưởng hơn.
+      </p>
+    </div>
+  </details>
 
   <script src="app.js"></script>
 </body>
